@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
     res.send('Home page')
 })
 app.get('/contact', (req, res) => {
-    res.send('Hello')
+    res.send('Hello world')
 })
 
 app.listen(3000, () => {
