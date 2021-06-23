@@ -4,35 +4,44 @@ db.sequelize.sync();
 const countryCapital = db.countryCapital
 
 exports.handler = async (event, context) => {
+
+    let httpMethod = event.httpMethod
+
+    let responseBody = {}
+
+    let body = JSON.parse(event.body)
     
-    let httpMethod = event.context.http_method
     switch (httpMethod) {
         case 'GET':
-            if (event.params.querystring.name) {
-                return await getCapitalByCountryName(event.params.querystring.name)
+            if (event.queryStringParameters && event.queryStringParameters.name) {
+                responseBody = await getCapitalByCountryName(event.queryStringParameters.name)
             } else {
-                return await getAllCapital()
+                responseBody = await getAllCapital()
             }
-
+            break;
         case 'POST':
-            return await insertNew(event.body_json)
-
+            responseBody = await insertNew(body)
+            break;
         case 'DELETE':
-            return await deleteRecordByCountryName(event.body_json.name)
+            responseBody = await deleteRecordByCountryName(body.name)
+            break;
     }
-    // return event
+
+    let response = { "statusCode": 200, "body": JSON.stringify(responseBody) }
+    
+    return response
 
 }
 
-async function insertNew(event) {
+async function insertNew(record) {
     let result = await countryCapital.findAll({
         where: {
-            name: event.name
+            name: record.name
         }
     })
 
     if (result.length == 0) {
-        await countryCapital.create(event)
+        await countryCapital.create(record)
         return {
             message: 'Success'
         }
@@ -55,6 +64,12 @@ async function getCapitalByCountryName(name) {
         }
     })
 
+    if (result.length == 0) {
+        return {
+            message: `Record with country named ${name} doesn't exist.`
+        }
+    }
+
     return result
 }
 
@@ -71,7 +86,7 @@ async function deleteRecordByCountryName(name) {
         }
     } else {
         return {
-            message: `Record with country name ${name} doesn't exist.`
+            message: `Record with country named ${name} doesn't exist.`
         }
     }
 }

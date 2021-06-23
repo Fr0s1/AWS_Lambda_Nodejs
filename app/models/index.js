@@ -11,7 +11,10 @@ const sequelize = new Sequelize(DB_CONFIG.DATABASE, DB_CONFIG.USERNAME, DB_CONFI
     },
     pool: { maxConnections: 5, maxIdleTime: 30 },
     language: 'en',
-    timezone: '+07:00'
+    timezone: '+07:00',
+    query: {
+        raw: true
+    }
 })
 
 countryCapital = require("./country_capital")(sequelize, DataTypes)
